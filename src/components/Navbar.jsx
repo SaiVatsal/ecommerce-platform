@@ -1,13 +1,13 @@
 import React from 'react';
-import { ShoppingBag, Heart, Shield, Package, UserCheck, Search } from 'lucide-react';
+import { ShoppingBag, Heart, Shield, Package, User, LogIn, Search, KeyRound } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export default function Navbar({ activeTab, setActiveTab, setIsCartOpen }) {
-  const { userRole, setUserRole, cart, wishlist, searchQuery, setSearchQuery } = useStore();
+  const { currentUser, userRole, cart, wishlist, searchQuery, setSearchQuery } = useStore();
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-800 bg-black/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-zinc-800 bg-black/90 backdrop-blur-md font-mono">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
 
@@ -62,38 +62,40 @@ export default function Navbar({ activeTab, setActiveTab, setIsCartOpen }) {
                   </span>
                 )}
               </button>
-              {userRole === 'seller' && (
-                <button
-                  onClick={() => setActiveTab('seller')}
-                  className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded transition-colors ${
-                    activeTab === 'seller'
-                      ? 'text-black bg-lime-400 font-bold'
-                      : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-                  }`}
-                >
-                  Seller Studio
-                </button>
-              )}
+
               {userRole === 'admin' && (
                 <button
                   onClick={() => setActiveTab('admin')}
                   className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded transition-colors ${
                     activeTab === 'admin'
                       ? 'text-black bg-lime-400 font-bold'
-                      : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                      : 'text-lime-400/90 border border-lime-400/30 hover:bg-lime-400/10'
                   }`}
                 >
                   Admin Analytics
                 </button>
               )}
+
+              {/* Login / Access Terminal Tab */}
+              <button
+                onClick={() => setActiveTab('login')}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'login'
+                    ? 'text-black bg-lime-400 font-bold'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5 text-lime-400" />
+                Login Terminal
+              </button>
             </nav>
           </div>
 
-          {/* Search bar & Role Switcher */}
+          {/* Search bar & User Profile / Login Widget */}
           <div className="flex items-center gap-4">
 
             {/* Search Input */}
-            <div className="relative hidden lg:block w-64">
+            <div className="relative hidden lg:block w-56">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
               <input
                 type="text"
@@ -104,26 +106,36 @@ export default function Navbar({ activeTab, setActiveTab, setIsCartOpen }) {
               />
             </div>
 
-            {/* Role Switcher Pill */}
-            <div className="flex items-center bg-zinc-900 p-1 border border-zinc-800 rounded">
-              <span className="text-[10px] text-zinc-500 font-mono px-2 uppercase flex items-center gap-1">
-                <UserCheck className="w-3 h-3 text-lime-400" />
-                Role:
-              </span>
-              <select
-                value={userRole}
-                onChange={(e) => {
-                  setUserRole(e.target.value);
-                  if (e.target.value === 'seller') setActiveTab('seller');
-                  if (e.target.value === 'admin') setActiveTab('admin');
-                }}
-                className="bg-black text-xs text-lime-400 font-mono font-bold px-2 py-1 rounded border border-zinc-800 focus:outline-none cursor-pointer"
+            {/* Auth Profile Button / Switcher */}
+            {currentUser ? (
+              <button
+                onClick={() => setActiveTab('login')}
+                className="flex items-center gap-2 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-lime-400/50 p-1.5 rounded transition text-left"
+                title="Account Settings & JWT Key"
               >
-                <option value="customer">CUSTOMER</option>
-                <option value="seller">SELLER</option>
-                <option value="admin">ADMIN</option>
-              </select>
-            </div>
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="w-6 h-6 rounded object-cover border border-lime-400"
+                />
+                <div className="hidden sm:block text-left pr-1">
+                  <div className="text-[11px] font-bold text-white uppercase leading-none">
+                    {currentUser.name.split(' ')[0]}
+                  </div>
+                  <span className="text-[9px] text-lime-400 uppercase font-bold tracking-wider">
+                    [{currentUser.role}]
+                  </span>
+                </div>
+              </button>
+            ) : (
+              <button
+                onClick={() => setActiveTab('login')}
+                className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 border border-lime-400 text-lime-400 text-xs font-bold uppercase rounded hover:bg-lime-400 hover:text-black transition"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>SIGN IN</span>
+              </button>
+            )}
 
             {/* Wishlist Trigger */}
             <button

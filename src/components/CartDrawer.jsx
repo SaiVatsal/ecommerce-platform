@@ -44,11 +44,11 @@ export default function CartDrawer({ isOpen, onClose }) {
         {/* Body Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {orderConfirmed ? (
-            <div className="text-center py-12 space-y-4">
+            <div className="text-center py-10 space-y-4 font-mono">
               <CheckCircle2 className="w-16 h-16 text-lime-400 mx-auto animate-bounce" />
-              <h3 className="text-2xl font-black uppercase text-white font-mono">ORDER SECURED!</h3>
-              <p className="text-xs text-zinc-400 font-mono">ORDER ID: {orderConfirmed.id}</p>
-              <div className="bg-zinc-900 border border-zinc-800 p-4 text-left font-mono text-xs space-y-2">
+              <h3 className="text-2xl font-black uppercase text-white">ORDER SECURED!</h3>
+              <p className="text-xs text-zinc-400">ORDER ID: {orderConfirmed.id}</p>
+              <div className="bg-zinc-900 border border-zinc-800 p-4 text-left text-xs space-y-2">
                 <div className="flex justify-between text-zinc-400">
                   <span>STATUS:</span> <span className="text-lime-400 font-bold">{orderConfirmed.status}</span>
                 </div>
@@ -58,15 +58,29 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <div className="flex justify-between text-zinc-400">
                   <span>TOTAL CHARGE:</span> <span className="text-lime-400 font-bold">${orderConfirmed.total}</span>
                 </div>
+                <div className="flex justify-between text-zinc-400">
+                  <span>COURIER:</span> <span className="text-lime-400 font-bold">Agent Marcus Vance</span>
+                </div>
               </div>
+
+              <button
+                onClick={() => {
+                  onClose();
+                  // activeTrackingOrder is already set in checkout
+                }}
+                className="w-full py-3 bg-lime-400 text-black font-black text-xs uppercase hover:bg-lime-300 transition flex items-center justify-center gap-2"
+              >
+                <span>OPEN LIVE ZOMATO TRACKER &rarr;</span>
+              </button>
+
               <button
                 onClick={() => {
                   setOrderConfirmed(null);
                   onClose();
                 }}
-                className="w-full py-3 bg-lime-400 text-black font-mono font-bold text-xs uppercase hover:bg-lime-300 transition"
+                className="w-full py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold text-xs uppercase hover:text-white transition"
               >
-                RETURN TO CATALOG
+                CLOSE TO CATALOG
               </button>
             </div>
           ) : cart.length === 0 ? (

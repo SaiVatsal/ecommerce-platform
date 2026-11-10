@@ -5,15 +5,17 @@ import OrdersPage from './pages/OrdersPage';
 import SellerPage from './pages/SellerPage';
 import AdminPage from './pages/AdminPage';
 import WishlistPage from './pages/WishlistPage';
+import LoginPage from './pages/LoginPage';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
+import LiveOrderTrackingModal from './components/LiveOrderTrackingModal';
 import { useStore } from './store/useStore';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('catalog');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const { userRole } = useStore();
+  const { userRole, activeTrackingOrder, setActiveTrackingOrder } = useStore();
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-lime-400 selection:text-black flex flex-col justify-between">
@@ -34,6 +36,9 @@ export default function App() {
           {activeTab === 'wishlist' && (
             <WishlistPage onSelectProduct={(prod) => setSelectedProduct(prod)} />
           )}
+          {activeTab === 'login' && (
+            <LoginPage onNavigate={(tab) => setActiveTab(tab)} />
+          )}
           {activeTab === 'seller' && userRole === 'seller' && <SellerPage />}
           {activeTab === 'admin' && userRole === 'admin' && <AdminPage />}
         </main>
@@ -41,6 +46,14 @@ export default function App() {
 
       {/* Cart Slide-Over */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {/* Zomato-Style Live Telemetry Order Tracking Modal */}
+      {activeTrackingOrder && (
+        <LiveOrderTrackingModal
+          order={activeTrackingOrder}
+          onClose={() => setActiveTrackingOrder(null)}
+        />
+      )}
 
       {/* Product Details & Reviews & Recommendation Modal */}
       {selectedProduct && (

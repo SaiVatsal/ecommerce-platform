@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Package, Truck, CheckCircle2, Clock, Download, ArrowRight } from 'lucide-react';
+import { Package, Truck, CheckCircle2, Clock, Download, ArrowRight, Radio } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export default function OrdersPage() {
-  const { orders } = useStore();
+  const { orders, setActiveTrackingOrder } = useStore();
   const [downloadingId, setDownloadingId] = useState(null);
 
   const getStatusStep = (status) => {
@@ -97,11 +97,20 @@ Thank you for acquiring Kronos technical gear.
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="text-right font-mono">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="text-right font-mono mr-2">
                       <span className="text-[10px] text-zinc-500 block">TOTAL AMOUNT</span>
                       <span className="text-xl font-black text-lime-400">${order.total}</span>
                     </div>
+
+                    <button
+                      onClick={() => setActiveTrackingOrder(order)}
+                      className="flex items-center gap-2 px-3.5 py-2 bg-lime-400 hover:bg-lime-300 text-black font-mono font-black text-xs transition uppercase"
+                      title="Open Zomato-Style Live Map Telemetry"
+                    >
+                      <Radio className="w-3.5 h-3.5 animate-pulse" />
+                      <span>LIVE MAP TRACK</span>
+                    </button>
 
                     <button
                       onClick={() => handleDownloadInvoice(order)}

@@ -1,8 +1,97 @@
 import { create } from 'zustand';
 
+export const PRESET_USERS = [
+  {
+    id: 'user-admin',
+    name: 'Cipher Overseer',
+    email: 'admin@kronos.corp',
+    password: 'admin123',
+    role: 'admin',
+    department: 'Command & Analytics',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    description: 'Executive clearance level 5 with full administrative oversight & radar metrics.'
+  },
+  {
+    id: 'user-cust-1',
+    name: 'Vatsal Operative',
+    email: 'customer@kronos.net',
+    password: 'cust123',
+    role: 'customer',
+    department: 'Field Operative',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+    description: 'Tier-1 Patron with priority checkout dispatch and active telemetry access.'
+  },
+  {
+    id: 'user-ship-1',
+    name: 'Marcus Vance',
+    email: 'shipping@kronos.corp',
+    password: 'ship123',
+    role: 'shipping',
+    department: 'Logistics Fleet Dispatch',
+    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80',
+    description: 'Lead Dispatch Courier with Hyper-Electric Cargo unit #KN-404.'
+  }
+];
+
+export const createMockJwt = (user) => {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(
+    JSON.stringify({
+      sub: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 86400
+    })
+  );
+  const signature = btoa(`KRONOS_HMAC_SIG_${user.role.toUpperCase()}_SECURE_SHA256`);
+  return `${header}.${payload}.${signature}`;
+};
+
+const defaultUser = PRESET_USERS[1]; // Default to customer
+
 export const useStore = create((set, get) => ({
-  userRole: 'customer', // 'customer' | 'seller' | 'admin'
+  currentUser: defaultUser,
+  userRole: defaultUser.role, // 'customer' | 'seller' | 'admin' | 'shipping'
+  jwtTokenName: 'KRONOS_AUTH_JWT_TOKEN',
+  jwtToken: createMockJwt(defaultUser),
+  activeTrackingOrder: null,
+
   setUserRole: (role) => set({ userRole: role }),
+  setActiveTrackingOrder: (order) => set({ activeTrackingOrder: order }),
+
+  login: (email, password) => {
+    const user = PRESET_USERS.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    );
+    if (!user) {
+      return { success: false, error: 'Invalid terminal credentials. Access Denied.' };
+    }
+    const token = createMockJwt(user);
+    set({
+      currentUser: user,
+      userRole: user.role,
+      jwtToken: token
+    });
+    return { success: true, user, token };
+  },
+
+  logout: () => {
+    set({
+      currentUser: null,
+      userRole: 'customer',
+      jwtToken: null
+    });
+  },
+
+  updateOrderStatus: (orderId, status) => set((state) => ({
+    orders: state.orders.map((o) => (o.id === orderId ? { ...o, status } : o)),
+    activeTrackingOrder:
+      state.activeTrackingOrder?.id === orderId
+        ? { ...state.activeTrackingOrder, status }
+        : state.activeTrackingOrder
+  })),
 
   products: [
     {
@@ -185,7 +274,7 @@ export const useStore = create((set, get) => ({
     return { wishlist: [...state.wishlist, productId] };
   }),
 
-  checkout: (shippingInfo) => {
+  checkout: (shippingInfo = {}) => {
     const state = get();
     if (state.cart.length === 0) return null;
     const subtotal = state.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -199,13 +288,21 @@ export const useStore = create((set, get) => ({
       total: subtotal + tax,
       status: 'Placed',
       trackingNumber: `TRK-${Math.floor(100000 + Math.random() * 900000)}-KRN`,
-      estimatedDelivery: '3 Business Days',
-      shippingAddress: shippingInfo.address || '2049 Innovation Way, New District'
+      estimatedDelivery: '18 Mins (Hyper-Express)',
+      shippingAddress: shippingInfo.address || '742 Evergreen Terrace, Sector 9, Neo-Veridia',
+      rider: {
+        name: 'Agent Marcus Vance',
+        rating: 4.98,
+        vehicle: 'Hyper-Electric Cargo Bike #KN-404',
+        phone: '+1 (555) 902-4411',
+        avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80'
+      }
     };
 
     set((s) => ({
       orders: [newOrder, ...s.orders],
-      cart: []
+      cart: [],
+      activeTrackingOrder: newOrder
     }));
     return newOrder;
   },
